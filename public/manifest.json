@@ -1,0 +1,56 @@
+{
+    "name": "Centurion Diary",
+    "short_name": "Centurion",
+    "description": "Spiritual productivity — Prayer, Soul Winning & Giving. Walk in Excellence.",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#fdfbf5",
+    "theme_color": "#1a2c5b",
+    "orientation": "portrait-primary",
+    "lang": "en",
+    "icons": [
+        {
+            "src": "/images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/images/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "categories": ["productivity", "lifestyle", "education"],
+    "shortcuts": [
+        {
+            "name": "Log Prayer",
+            "short_name": "Prayer",
+            "description": "Log a prayer session",
+            "url": "/prayer",
+            "icons": [{"src": "/images/icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Add Soul",
+            "short_name": "Soul",
+            "description": "Register a soul won",
+            "url": "/souls",
+            "icons": [{"src": "/images/icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Log Giving",
+            "short_name": "Giving",
+            "description": "Log a contribution",
+            "url": "/giving",
+            "icons": [{"src": "/images/icon-192.png", "sizes": "192x192"}]
+        }
+    ]
+}
