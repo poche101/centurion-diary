@@ -124,4 +124,69 @@ public function storeScripture(Request $request)
 
         return back()->with('success', "{$user->full_name}'s admin status updated.");
     }
+
+    public function sendNotification(Request $request)
+{
+    $validated = $request->validate([
+        'title'   => ['required', 'string', 'max:120'],
+        'message' => ['required', 'string', 'max:1000'],
+        'target'  => ['required', 'in:all,inactive,centurions'],
+    ]);
+
+    // Build the user query based on target
+    $query = User::where('is_admin', false)
+        ->with(['prayerLogs', 'souls', 'givingLogs', 'pushSubscriptions']);
+
+    if ($validated['target'] === 'inactive') {
+        $query->where('last_login_at', '<', now()->subDays(3));
+    } elseif ($validated['target'] === 'centurions') {
+        $query->whereHas('pushSubscriptions');
+        // Filter centurions after loading (uses your accessor)
+        $users = $query->get()->filter(fn($u) => $u->overall_progress >= 100);
+    }
+
+    $users = $users ?? $query->get();
+
+    $auth = [
+        'VAPID' => [
+            'subject'    => 'mailto:' . config('app.admin_email', 'admin@example.com'),
+            'publicKey'  => config('webpush.vapid.public_key'),
+            'privateKey' => config('webpush.vapid.private_key'),
+        ],
+    ];
+
+    $webPush = new WebPush($auth);
+
+    $payload = json_encode([
+        'title' => $validated['title'],
+        'body'  => $validated['message'],
+        'url'   => '/dashboard',
+    ]);
+
+    foreach ($users as $user) {
+        foreach ($user->pushSubscriptions as $sub) {
+            $webPush->queueNotification(
+                Subscription::create([
+                    'endpoint'        => $sub->endpoint,
+                    'keys'            => [
+                        'p256dh' => $sub->p256dh,
+                        'auth'   => $sub->auth,
+                    ],
+                ]),
+                $payload
+            );
+        }
+    }
+
+    // Flush — sends all queued notifications
+    foreach ($webPush->flush() as $report) {
+        if (!$report->isSuccess()) {
+            // Remove dead subscriptions automatically
+            PushSubscription::where('endpoint', $report->getRequest()->getUri()->__toString())->delete();
+        }
+    }
+
+    return redirect()->route('admin.dashboard')
+        ->with('success', "Notification '{$validated['title']}' sent to {$validated['target']} members!");
+}
 }

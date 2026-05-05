@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <title>@yield('title', 'Centurion Diary') — Walk in Excellence</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a2c5b">
@@ -15,11 +16,64 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <link rel="manifest" href="/manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
+
+    {{-- ── Service Worker + Push Notification Setup ─────────────────────────── --}}
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(async function(registration) {
+
+            // 1. Ask for permission (triggers the browser allow/block prompt once)
+            if ('Notification' in window && Notification.permission === 'default') {
+              const permission = await Notification.requestPermission();
+              if (permission !== 'granted') {
+                console.warn('🔕 Notification permission not granted.');
+                return;
+              }
+            }
+
+            // 2. Only proceed if permission is confirmed granted
+            if (Notification.permission !== 'granted') return;
+            if (!('PushManager' in window)) return;
+
+            // 3. Skip if already subscribed
+            const existing = await registration.pushManager.getSubscription();
+            if (existing) return;
+
+            // 4. Subscribe using VAPID public key from Laravel config
+            const vapidKey = '{{ config("webpush.vapid.public_key") }}';
+            if (!vapidKey) return;
+
+            const subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(vapidKey),
+            });
+
+            // 5. Save subscription to Laravel backend
+            await fetch('/push/subscribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+              },
+              body: JSON.stringify(subscription),
+            });
+
+            console.log('✅ Push subscription saved.');
+          })
+          .catch(function(err) {
+            console.error('❌ SW registration failed:', err);
+          });
+      }
+
+      function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+        const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw     = atob(base64);
+        return Uint8Array.from([...raw].map(function(c) { return c.charCodeAt(0); }));
+      }
+    </script>
+
     <!-- Tailwind via CDN for demo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -592,7 +646,6 @@
         <div class="nav-section">
             <div class="nav-section-title">Main</div>
 
-            {{-- ✅ Home button --}}
             <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('home') ? 'active' : '' }}">
                 <div class="icon"><i class="fas fa-home"></i></div>
                 Home

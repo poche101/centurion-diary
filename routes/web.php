@@ -7,6 +7,7 @@ use App\Http\Controllers\GivingController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PrayerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ScriptureController;
 use App\Http\Controllers\SoulController;
 use Illuminate\Support\Facades\Route;
@@ -22,10 +23,10 @@ Route::get('/', fn () => redirect()->route('login'));
 
 // Auth (guests only)
 Route::middleware('guest')->group(function () {
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::get('/forgot-password', fn () => view('auth.forgot-password'))->name('password.request');
@@ -39,10 +40,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
 
-    // Home — protected, login required
-    Route::get('/home', function () {
-        return view('welcome');
-    })->name('home');
+    // Home
+    Route::get('/home', fn () => view('welcome'))->name('home');
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -50,7 +49,11 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Prayer
+    // ── Push Subscriptions ─────────────────────────────────────────
+    Route::post('/push/subscribe',     [PushSubscriptionController::class, 'store']);
+    Route::delete('/push/unsubscribe', [PushSubscriptionController::class, 'destroy']);
+
+    // ── Prayer ─────────────────────────────────────────────────────
     Route::prefix('prayer')->name('prayer.')->group(function () {
         Route::get('/',               [PrayerController::class, 'index'])->name('index');
         Route::post('/',              [PrayerController::class, 'store'])->name('store');
@@ -58,7 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{prayerLog}', [PrayerController::class, 'destroy'])->name('destroy');
     });
 
-    // Soul Winning
+    // ── Soul Winning ───────────────────────────────────────────────
     Route::prefix('souls')->name('souls.')->group(function () {
         Route::get('/',          [SoulController::class, 'index'])->name('index');
         Route::post('/',         [SoulController::class, 'store'])->name('store');
@@ -66,28 +69,28 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{soul}', [SoulController::class, 'destroy'])->name('destroy');
     });
 
-    // Giving
+    // ── Giving ─────────────────────────────────────────────────────
     Route::prefix('giving')->name('giving.')->group(function () {
         Route::get('/',               [GivingController::class, 'index'])->name('index');
         Route::post('/',              [GivingController::class, 'store'])->name('store');
         Route::delete('/{givingLog}', [GivingController::class, 'destroy'])->name('destroy');
     });
 
-    // Leaderboard
+    // ── Leaderboard ────────────────────────────────────────────────
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 
-    // Daily Scripture
+    // ── Daily Scripture ────────────────────────────────────────────
     Route::get('/scripture', [ScriptureController::class, 'index'])->name('scripture');
 
-    // Profile
+    // ── Profile ────────────────────────────────────────────────────
     Route::get('/profile',            [ProfileController::class, 'index'])->name('profile');
     Route::patch('/profile',          [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     /*
-    |----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Admin Routes
-    |----------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
     Route::middleware(\App\Http\Middleware\IsAdmin::class)
         ->prefix('admin')
@@ -97,7 +100,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
             // Scripture CMS
-            Route::post('/scripture',              [AdminController::class, 'storeScripture'])->name('scripture.store');
+            Route::post('/scripture',               [AdminController::class, 'storeScripture'])->name('scripture.store');
             Route::delete('/scripture/{scripture}', [AdminController::class, 'destroyScripture'])->name('scripture.destroy');
 
             // Bulk notifications
@@ -106,4 +109,5 @@ Route::middleware('auth')->group(function () {
             // User management
             Route::patch('/users/{user}/toggle-admin', [AdminController::class, 'toggleAdmin'])->name('users.toggle-admin');
         });
-});
+
+}); // ← closes Route::middleware('auth')
