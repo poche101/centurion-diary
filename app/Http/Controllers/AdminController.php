@@ -9,6 +9,9 @@ use App\Models\Soul;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
+use NotificationChannels\WebPush\PushSubscription;
 
 class AdminController extends Controller
 {
@@ -16,18 +19,15 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        // Global totals
         $totalUsers       = User::where('is_admin', false)->count();
         $totalPrayerHours = round(PrayerLog::sum('duration_minutes') / 60, 1);
         $totalSouls       = Soul::count();
         $totalEspees      = round(GivingLog::sum('amount_espees'), 2);
 
-        // Active today (logged in during last 24 h)
         $activeToday = User::where('is_admin', false)
             ->where('last_login_at', '>=', now()->subDay())
             ->count();
 
-        // Centurion counts (computed via PHP accessors)
         $allRegularUsers   = User::where('is_admin', false)
             ->with(['prayerLogs', 'souls', 'givingLogs'])
             ->get();
@@ -37,26 +37,22 @@ class AdminController extends Controller
         $givingCenturions  = $allRegularUsers->filter(fn($u) => $u->giving_espees >= 100)->count();
         $fullCenturions    = $allRegularUsers->filter(fn($u) => $u->overall_progress >= 100)->count();
 
-        // Distribution buckets
         $stage0_25  = $allRegularUsers->filter(fn($u) => $u->overall_progress <= 25)->count();
         $stage25_50 = $allRegularUsers->filter(fn($u) => $u->overall_progress > 25 && $u->overall_progress <= 50)->count();
         $stage50_75 = $allRegularUsers->filter(fn($u) => $u->overall_progress > 50 && $u->overall_progress <= 75)->count();
         $stage75_99 = $allRegularUsers->filter(fn($u) => $u->overall_progress > 75 && $u->overall_progress < 100)->count();
 
-        // Hall of fame
         $centurionHeroes = $allRegularUsers
             ->filter(fn($u) => $u->overall_progress >= 100)
             ->sortByDesc('overall_progress')
             ->take(10)
             ->values();
 
-        // Paginated user table
         $allUsers = User::where('is_admin', false)
             ->with(['prayerLogs', 'souls', 'givingLogs'])
             ->latest()
             ->paginate(20);
 
-        // Scriptures
         $scriptures = Scripture::orderByDesc('date')->take(10)->get();
 
         return view('admin.dashboard', compact(
@@ -70,27 +66,27 @@ class AdminController extends Controller
 
     // ── Scripture CMS ─────────────────────────────────────────────
 
-public function storeScripture(Request $request)
-{
-    $validated = $request->validate([
-        'date'      => ['required', 'date_format:Y-m-d'],
-        'reference' => ['required', 'string', 'max:80'],
-        'text'      => ['required', 'string', 'max:2000'],
-    ]);
+    public function storeScripture(Request $request)
+    {
+        $validated = $request->validate([
+            'date'      => ['required', 'date_format:Y-m-d'],
+            'reference' => ['required', 'string', 'max:80'],
+            'text'      => ['required', 'string', 'max:2000'],
+        ]);
 
-    DB::table('scriptures')->updateOrInsert(
-        ['date' => $validated['date']],
-        [
-            'reference'  => $validated['reference'],
-            'text'       => $validated['text'],
-            'updated_at' => now(),
-            'created_at' => now(),
-        ]
-    );
+        DB::table('scriptures')->updateOrInsert(
+            ['date' => $validated['date']],
+            [
+                'reference'  => $validated['reference'],
+                'text'       => $validated['text'],
+                'updated_at' => now(),
+                'created_at' => now(),
+            ]
+        );
 
-    return redirect()->route('admin.dashboard')
-        ->with('success', "Scripture for {$validated['date']} saved successfully!");
-}
+        return redirect()->route('admin.dashboard')
+            ->with('success', "Scripture for {$validated['date']} saved successfully!");
+    }
 
     public function destroyScripture(Scripture $scripture)
     {
@@ -101,31 +97,7 @@ public function storeScripture(Request $request)
 
     // ── Bulk Notification ─────────────────────────────────────────
 
-    public function sendNotification(Request $request)
-    {
-        $validated = $request->validate([
-            'title'   => ['required', 'string', 'max:120'],
-            'message' => ['required', 'string', 'max:1000'],
-            'target'  => ['required', 'in:all,inactive,centurions'],
-        ]);
-
-        // In a real app: dispatch a queued job / push to FCM / broadcast
-        // Here we just return success — wire up your push service as needed
-
-        return redirect()->route('admin.dashboard')
-            ->with('success', "Notification '{$validated['title']}' queued for {$validated['target']} members!");
-    }
-
-    // ── Toggle Admin ──────────────────────────────────────────────
-
-    public function toggleAdmin(User $user)
-    {
-        $user->update(['is_admin' => ! $user->is_admin]);
-
-        return back()->with('success', "{$user->full_name}'s admin status updated.");
-    }
-
-    public function sendNotification(Request $request)
+   public function sendNotification(Request $request)
 {
     $validated = $request->validate([
         'title'   => ['required', 'string', 'max:120'],
@@ -133,23 +105,24 @@ public function storeScripture(Request $request)
         'target'  => ['required', 'in:all,inactive,centurions'],
     ]);
 
-    // Build the user query based on target
-    $query = User::where('is_admin', false)
-        ->with(['prayerLogs', 'souls', 'givingLogs', 'pushSubscriptions']);
+    \Log::info('sendNotification called', $validated); // ← moved here
+
+    $query = User::with(['prayerLogs', 'souls', 'givingLogs', 'pushSubscriptions']);
 
     if ($validated['target'] === 'inactive') {
         $query->where('last_login_at', '<', now()->subDays(3));
+        $users = $query->get();
     } elseif ($validated['target'] === 'centurions') {
-        $query->whereHas('pushSubscriptions');
-        // Filter centurions after loading (uses your accessor)
         $users = $query->get()->filter(fn($u) => $u->overall_progress >= 100);
+    } else {
+        $users = $query->get();
     }
 
-    $users = $users ?? $query->get();
+    \Log::info('Users found', ['count' => $users->count()]); // ← add this too
 
     $auth = [
         'VAPID' => [
-            'subject'    => 'mailto:' . config('app.admin_email', 'admin@example.com'),
+            'subject'    => config('webpush.vapid.subject', 'mailto:admin@centuriondiary.com'),
             'publicKey'  => config('webpush.vapid.public_key'),
             'privateKey' => config('webpush.vapid.private_key'),
         ],
@@ -163,30 +136,50 @@ public function storeScripture(Request $request)
         'url'   => '/dashboard',
     ]);
 
+    $sent = 0;
     foreach ($users as $user) {
         foreach ($user->pushSubscriptions as $sub) {
+            \Log::info('Queuing notification', ['user' => $user->id, 'endpoint' => $sub->endpoint]);
             $webPush->queueNotification(
                 Subscription::create([
                     'endpoint'        => $sub->endpoint,
+                    'contentEncoding' => $sub->content_encoding ?? 'aesgcm',
                     'keys'            => [
-                        'p256dh' => $sub->p256dh,
-                        'auth'   => $sub->auth,
+                        'p256dh' => $sub->public_key,
+                        'auth'   => $sub->auth_token,
                     ],
                 ]),
                 $payload
             );
+            $sent++;
         }
     }
 
-    // Flush — sends all queued notifications
+    \Log::info('Flushing notifications', ['sent' => $sent]);
+
     foreach ($webPush->flush() as $report) {
-        if (!$report->isSuccess()) {
-            // Remove dead subscriptions automatically
-            PushSubscription::where('endpoint', $report->getRequest()->getUri()->__toString())->delete();
+        if ($report->isSuccess()) {
+            \Log::info('Push sent successfully', ['endpoint' => $report->getEndpoint()]);
+        } else {
+            \Log::error('Push failed', [
+                'endpoint' => $report->getEndpoint(),
+                'reason'   => $report->getReason(),
+                'response' => $report->getResponse() ? $report->getResponse()->getBody()->__toString() : 'no response',
+            ]);
+            PushSubscription::where('endpoint', $report->getEndpoint())->delete();
         }
     }
 
     return redirect()->route('admin.dashboard')
-        ->with('success', "Notification '{$validated['title']}' sent to {$validated['target']} members!");
+        ->with('success', "Notification '{$validated['title']}' sent to {$sent} device(s)!");
 }
+
+    // ── Toggle Admin ──────────────────────────────────────────────
+
+    public function toggleAdmin(User $user)
+    {
+        $user->update(['is_admin' => ! $user->is_admin]);
+
+        return back()->with('success', "{$user->full_name}'s admin status updated.");
+    }
 }
