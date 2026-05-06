@@ -42,7 +42,7 @@ class GivingController extends Controller
     {
         $validated = $request->validate([
             'amount_espees' => ['required', 'numeric', 'min:0.01', 'max:99999'],
-            'category'      => ['required', 'string', 'in:tithe,offering,missions,welfare,building_fund,special_seed,other'],
+            'category'      => ['required', 'string', 'in:manifestation_conference,offering,missions,welfare,building_fund,special_seed,other'],
             'description'   => ['nullable', 'string', 'max:300'],
             'date_given'    => ['required', 'date', 'before_or_equal:today'],
         ]);

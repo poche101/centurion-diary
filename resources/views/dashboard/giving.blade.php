@@ -160,7 +160,7 @@
                 <div style="margin-bottom:14px;">
                     <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Category *</label>
                     <select name="category" class="cd-input" required>
-                        <option value="tithe">Manifestation Conference</option>
+                        <option value="manifestation_conference">Manifestation Conference</option>
                     </select>
                 </div>
 

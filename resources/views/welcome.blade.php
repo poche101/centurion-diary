@@ -434,6 +434,17 @@
       gap: 14px;
     }
   }
+
+  @media (max-width: 600px) {
+    .hero-img-section {
+        max-height: none;
+    }
+
+    .hero-img-section img {
+        height: auto;
+        object-fit: contain;
+    }
+}
 </style>
 </head>
 <body>
