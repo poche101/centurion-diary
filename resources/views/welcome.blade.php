@@ -49,21 +49,6 @@
     align-items: center; justify-content: flex-end;
     padding-bottom: 48px; text-align: center;
   }
-  .hero-img-overlay h1 {
-    font-size: clamp(52px, 9vw, 88px); font-weight: 900; line-height: 0.95;
-    color: #fff; margin-bottom: 4px;
-  }
-  .hero-img-overlay h1 .man { color: #ffc107; }
-  .hero-img-overlay .conf-sub {
-    font-size: clamp(22px, 4vw, 38px); font-weight: 300;
-    color: rgba(255,255,255,0.7); font-style: italic; letter-spacing: 2px;
-    margin-bottom: 16px;
-  }
-  .hero-tag-pill {
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    color: #ffc107; border: 1px solid rgba(255,193,7,0.5);
-    padding: 5px 18px; border-radius: 24px; margin-bottom: 20px;
-  }
 
   .hero-info-bar {
     background: #fff; border-bottom: 1px solid rgba(0,0,0,0.07);
@@ -121,24 +106,6 @@
   .sched-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #1a1a1a; }
   .sched-loc { font-size: 12px; color: #b8860b; font-weight: 500; }
 
-  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .gallery-item {
-    border-radius: 12px; overflow: hidden;
-    background: #e8e0d0;
-    border: 1px solid rgba(0,0,0,0.07);
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: box-shadow 0.2s;
-  }
-  .gallery-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-  .gallery-item.tall { grid-row: span 2; aspect-ratio: auto; min-height: 220px; }
-  .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-  .gallery-placeholder {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 10px; color: rgba(0,0,0,0.2); width: 100%; height: 100%; min-height: 120px;
-  }
-  .gallery-placeholder svg { width: 28px; height: 28px; stroke: currentColor; fill: none; }
-  .gallery-placeholder span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
-
   .cta-section { max-width: 960px; margin: 0 auto; padding: 0 32px 72px; }
   .cta-box {
     background: #fff;
@@ -162,22 +129,325 @@
     .section { padding: 48px 20px; }
     .hero-img-section img { height: 380px; }
   }
+
+  /* ═══════════════════════════════════════════════════════════
+     CINEMATIC SLIDER
+  ═══════════════════════════════════════════════════════════ */
+
+  .gallery-section {
+    padding: 80px 0;
+    background: #0d0d0d;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle grain overlay */
+  .gallery-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .gallery-section-header {
+    text-align: center;
+    padding: 0 24px 56px;
+    position: relative;
+    z-index: 1;
+  }
+  .gallery-section-header .sec-label {
+    color: #b8860b;
+    letter-spacing: 4px;
+    font-size: 10px;
+  }
+  .gallery-section-header .sec-title {
+    color: #fff;
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .gallery-section-header .sec-title span {
+    color: #ffc107;
+  }
+
+  /* ── Track ─────────────────────────────────────────── */
+  .slider-viewport {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .slider-track {
+    display: flex;
+    gap: 20px;
+    padding: 0 calc(50vw - 200px);
+    transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    will-change: transform;
+  }
+
+  /* ── Cards ─────────────────────────────────────────── */
+  .slide-card {
+    flex: 0 0 360px;
+    height: 520px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.5s ease,
+                filter 0.5s ease;
+    filter: brightness(0.55) saturate(0.7);
+    transform: scale(0.88);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+
+  .slide-card.active {
+    filter: brightness(1) saturate(1.1);
+    transform: scale(1);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,193,7,0.25);
+    z-index: 2;
+  }
+
+  .slide-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.8s ease;
+  }
+  .slide-card.active img {
+    transform: scale(1.04);
+  }
+
+  /* Gold shimmer border on active */
+  .slide-card.active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255,193,7,0.45);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Gradient overlay on card */
+  .slide-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(13,13,13,0.75) 0%,
+      rgba(13,13,13,0.2) 40%,
+      transparent 70%
+    );
+    transition: opacity 0.4s ease;
+    z-index: 1;
+  }
+  .slide-card.active::after {
+    opacity: 0.5;
+  }
+
+  /* ── Active card decorative line ──────────────────── */
+  .slide-card-accent {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 48px;
+    height: 2px;
+    background: #ffc107;
+    border-radius: 2px;
+    z-index: 4;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+  }
+  .slide-card.active .slide-card-accent {
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  /* ── Navigation ────────────────────────────────────── */
+  .slider-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .slider-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,193,7,0.4);
+    background: rgba(255,255,255,0.05);
+    color: #ffc107;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+  }
+  .slider-btn:hover {
+    background: #b8860b;
+    border-color: #b8860b;
+    color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(184,134,11,0.4);
+  }
+  .slider-btn:active { transform: scale(0.95); }
+
+  /* ── Dots ──────────────────────────────────────────── */
+  .slider-dots {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slider-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .slider-dot.active {
+    width: 28px;
+    border-radius: 3px;
+    background: #ffc107;
+  }
+
+  /* ── Counter ───────────────────────────────────────── */
+  .slider-counter {
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    min-width: 52px;
+    text-align: center;
+  }
+  .slider-counter span { color: #ffc107; }
+
+  /* ── Fullscreen Lightbox ───────────────────────────── */
+  .film-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.97);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(16px);
+  }
+  .film-lightbox.open { display: flex; animation: lbIn 0.4s ease; }
+  @keyframes lbIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .film-lb-inner {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    animation: lbScale 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes lbScale {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  .film-lb-inner img {
+    max-width: 100%;
+    max-height: 88vh;
+    border-radius: 16px;
+    display: block;
+    object-fit: contain;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+  }
+
+  /* Gold frame lines — cinematic letterbox feel */
+  .film-lb-inner::before,
+  .film-lb-inner::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #ffc107, transparent);
+    opacity: 0.5;
+  }
+  .film-lb-inner::before { top: -10px; }
+  .film-lb-inner::after  { bottom: -10px; }
+
+  .film-lb-close {
+    position: fixed;
+    top: 24px; right: 28px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
+    font-size: 16px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+  }
+  .film-lb-close:hover {
+    background: rgba(255,193,7,0.2);
+    border-color: rgba(255,193,7,0.4);
+    color: #ffc107;
+    transform: rotate(90deg);
+  }
+
+  /* ── Swipe hint on mobile ──────────────────────────── */
+  .swipe-hint {
+    text-align: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 20px;
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .swipe-hint { display: block; }
+
+    .slide-card {
+      flex: 0 0 260px;
+      height: 380px;
+    }
+    .slider-track {
+      padding: 0 calc(50vw - 130px);
+    }
+  }
+  @media (max-width: 480px) {
+    .slide-card {
+      flex: 0 0 220px;
+      height: 320px;
+    }
+    .slider-track {
+      padding: 0 calc(50vw - 110px);
+      gap: 14px;
+    }
+  }
 </style>
 </head>
 <body>
 
 <nav class="flex items-center justify-between p-4 bg-white shadow-sm">
-    <!-- Height set to 10 (2.5rem or 40px) ensures it stays within standard nav bounds -->
     <img src="images/lz5.png" alt="LZ5 Logo" class="h-10 w-auto object-contain" style="width:120px;">
-
     <a href="{{ route('dashboard') }}" class="nav-cta px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">
         Dashboard
     </a>
 </nav>
+
 <div class="hero-img-section">
-    <img src="images/man.jpeg" alt="">
-  <div class="hero-img-overlay">
-  </div>
+    <img src="images/mani.jpeg" alt="">
+    <div class="hero-img-overlay"></div>
 </div>
 
 <div class="hero-info-bar">
@@ -187,7 +457,6 @@
       <div class="info-label">Saturday</div>
       <div class="info-val">May 9th · 10:00 AM</div>
     </div>
-
   </div>
   <div class="info-item">
     <div class="info-icon">📅</div>
@@ -244,402 +513,121 @@
 
 <div class="divider"></div>
 
-<div class="section" id="gallery">
-  <div class="sec-label">Memories</div>
-  <div class="sec-title">Photo Gallery</div>
-
-  {{-- Filter Tabs --}}
-  <div class="gallery-filters">
-    <button class="gf-btn active" onclick="filterGallery('all', this)">All</button>
-    <button class="gf-btn" onclick="filterGallery('tall', this)">Portraits</button>
-    <button class="gf-btn" onclick="filterGallery('wide', this)">Featured</button>
+<!-- ════════════════════════════════════════════════════
+     CINEMATIC SLIDER SECTION
+════════════════════════════════════════════════════ -->
+<div class="gallery-section" id="gallery">
+  <div class="gallery-section-header section">
+    <div class="sec-label"></div>
+    <div class="sec-title">The <span>Men</span> of MANifestation</div>
   </div>
 
-  <div class="gallery-grid" id="galleryGrid">
-
-    {{-- Row 1 --}}
-    <div class="gallery-item tall" data-category="tall" onclick="openLightbox('images/tom.jpg', 'Tom')">
-      <img src="images/tom.jpg" alt="Tom">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+  <div class="slider-viewport" id="sliderViewport">
+    <div class="slider-track" id="sliderTrack">
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/tom.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-      <div class="gallery-badge">Portrait</div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/chris.jpg', 'Chris')">
-      <img src="images/chris.jpg" alt="Chris">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/chris.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/efe.jpg', 'Efe')">
-      <img src="images/efe.jpg" alt="Efe">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/efe.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-    <div class="gallery-item wide" data-category="wide" onclick="openLightbox('images/asore.jpg', 'Asore')">
-      <img src="images/asore.jpg" alt="Asore">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/asore.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-      <div class="gallery-badge featured">Featured</div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/ray.jpg', 'Ray')">
-      <img src="images/ray.jpg" alt="Ray">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/ray.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-     <div class="gallery-item" data-category="normal" onclick="openLightbox('images/nwa.jpg', 'nwa')">
-      <img src="images/nwa.jpg" alt="nwa">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/nwa.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-     <div class="gallery-item" data-category="normal" onclick="openLightbox('images/edo.jpg', 'edo')">
-      <img src="images/edo.jpg" alt="edo">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/edo.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-    {{-- Row 2 --}}
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/beke.jpeg', 'Beke')">
-      <img src="images/beke.jpeg" alt="Beke">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/beke.jpeg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-    </div>
-
-    <div class="gallery-item tall" data-category="tall" onclick="openLightbox('images/bless.jpg', 'Bless')">
-      <img src="images/bless.jpg" alt="Bless">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/bless.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
-      <div class="gallery-badge">Portrait</div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/udeh.jpg', 'Udeh')">
-      <img src="images/udeh.jpg" alt="Udeh">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/udeh.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/kunle.jpeg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/cele.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/ef.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/ehi.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/sunny.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/edward.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/okorie.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/val.jpeg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/ozuzu.jpg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/stan2.jpeg" alt="">
+        <div class="slide-card-accent"></div>
+      </div>
+      <div class="slide-card" onclick="openFilmbox(this)">
+        <img src="images/kalu.jpg" alt="">
+        <div class="slide-card-accent"></div>
       </div>
     </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/kunle.jpeg', 'Kunle')">
-      <img src="images/kunle.jpeg" alt="Kunle">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/cele.jpg', 'cele')">
-      <img src="images/cele.jpg" alt="cele">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/ef.jpg', 'ef')">
-      <img src="images/ef.jpg" alt="ef">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item wide" data-category="wide" onclick="openLightbox('images/ehi.jpg', 'Ehi')">
-      <img src="images/ehi.jpg" alt="Ehi">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-      <div class="gallery-badge featured">Featured</div>
-    </div>
-
-    {{-- Row 3 --}}
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/sunny.jpg', 'Sunny')">
-      <img src="images/sunny.jpg" alt="Sunny">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/asore.jpg', 'Asore')">
-      <img src="images/asore.jpg" alt="Asore">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item tall" data-category="tall" onclick="openLightbox('images/edward.jpg', 'Edward')">
-      <img src="images/edward.jpg" alt="Edward">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-      <div class="gallery-badge">Portrait</div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/okorie.jpg', 'Okorie')">
-      <img src="images/okorie.jpg" alt="Okorie">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="gallery-item" data-category="normal" onclick="openLightbox('images/val.jpeg', 'Val')">
-      <img src="images/val.jpeg" alt="Val">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-      <div class="gallery-item" data-category="normal" onclick="openLightbox('images/ozuzu.jpg', 'ozuzu')">
-      <img src="images/ozuzu.jpg" alt="ozuzu">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
-     <div class="gallery-item" data-category="normal" onclick="openLightbox('images/kalu.jpg', 'kalu')">
-      <img src="images/kalu.jpg" alt="kalu">
-      <div class="gallery-overlay">
-        <div class="gallery-overlay-content">
-          <span class="gallery-icon">🔍</span>
-        </div>
-      </div>
-    </div>
-
   </div>
+
+  <div class="slider-nav">
+    <button class="slider-btn" id="prevBtn" onclick="slideBy(-1)">&#8592;</button>
+    <div class="slider-dots" id="sliderDots"></div>
+    <span class="slider-counter" id="sliderCounter"><span id="cCurrent">1</span> / <span id="cTotal">1</span></span>
+    <button class="slider-btn" id="nextBtn" onclick="slideBy(1)">&#8594;</button>
+  </div>
+
+  <div class="swipe-hint">← swipe to explore →</div>
 </div>
 
-{{-- Lightbox --}}
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <div class="lightbox-inner" onclick="event.stopPropagation()">
-    <img id="lightboxImg" src="" alt="">
-    <p id="lightboxCaption"></p>
+<!-- Filmbox (no names, no captions) -->
+<div class="film-lightbox" id="filmLightbox" onclick="closeFilmbox()">
+  <button class="film-lb-close" onclick="closeFilmbox()">✕</button>
+  <div class="film-lb-inner" onclick="event.stopPropagation()">
+    <img id="filmLbImg" src="" alt="">
   </div>
 </div>
-
-<style>
-  /* ── Filters ───────────────────────────────────────── */
-  .gallery-filters {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-  }
-  .gf-btn {
-    padding: 8px 22px;
-    border-radius: 999px;
-    border: 1px solid rgba(0,0,0,0.12);
-    background: transparent;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    letter-spacing: 0.5px;
-  }
-  .gf-btn:hover { background: #1a2c5b; color: #fff; border-color: #1a2c5b; }
-  .gf-btn.active { background: #1a2c5b; color: #fff; border-color: #1a2c5b; }
-
-  /* ── Grid ──────────────────────────────────────────── */
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 200px;
-    gap: 12px;
-  }
-
-  /* ── Items ─────────────────────────────────────────── */
-  .gallery-item {
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-    cursor: pointer;
-    background: #e5e7eb;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
-  }
-  .gallery-item:hover { transform: scale(1.03); box-shadow: 0 20px 60px rgba(0,0,0,0.18); z-index: 2; }
-  .gallery-item.tall { grid-row: span 2; }
-  .gallery-item.wide { grid-column: span 2; }
-
-  .gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s ease;
-  }
-  .gallery-item:hover img { transform: scale(1.08); }
-
-  /* ── Overlay ───────────────────────────────────────── */
-  .gallery-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(26,44,91,0.85) 0%, rgba(26,44,91,0.2) 50%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    display: flex;
-    align-items: flex-end;
-    padding: 16px;
-  }
-  .gallery-item:hover .gallery-overlay { opacity: 1; }
-
-  .gallery-overlay-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transform: translateY(10px);
-    transition: transform 0.35s ease;
-  }
-  .gallery-item:hover .gallery-overlay-content { transform: translateY(0); }
-
-  .gallery-icon { font-size: 1rem; }
-  .gallery-name {
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-  }
-
-  /* ── Badge ─────────────────────────────────────────── */
-  .gallery-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(26,44,91,0.85);
-    color: #f5d060;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    backdrop-filter: blur(6px);
-  }
-  .gallery-badge.featured { background: rgba(212,160,23,0.9); color: #1a2c5b; }
-
-  /* ── Hidden state for filter ───────────────────────── */
-  .gallery-item.hidden {
-    display: none;
-  }
-
-  /* ── Lightbox ──────────────────────────────────────── */
-  .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-    animation: lbFadeIn 0.3s ease;
-  }
-  .lightbox.open { display: flex; }
-  @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .lightbox-inner {
-    max-width: 88vw;
-    max-height: 88vh;
-    text-align: center;
-    animation: lbSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  @keyframes lbSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-  .lightbox-inner img {
-    max-width: 100%;
-    max-height: 80vh;
-    border-radius: 16px;
-    object-fit: contain;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
-  }
-
-  #lightboxCaption {
-    color: rgba(255,255,255,0.7);
-    margin-top: 14px;
-    font-size: 0.88rem;
-    letter-spacing: 1px;
-  }
-
-  .lightbox-close {
-    position: absolute;
-    top: 24px;
-    right: 28px;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: #fff;
-    font-size: 1.2rem;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.2s;
-    backdrop-filter: blur(6px);
-  }
-  .lightbox-close:hover { background: rgba(255,255,255,0.2); }
-
-  /* ── Responsive ────────────────────────────────────── */
-  @media (max-width: 768px) {
-    .gallery-grid {
-      grid-template-columns: repeat(2, 1fr);
-      grid-auto-rows: 160px;
-    }
-  }
-  @media (max-width: 480px) {
-    .gallery-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-auto-rows: 140px;
-    }
-  }
-</style>
 
 <div class="divider"></div>
 
@@ -658,35 +646,100 @@
 </footer>
 
 <script>
-  function openLightbox(src, name) {
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightboxCaption').innerText = name;
-    document.getElementById('lightbox').classList.add('open');
-    document.body.style.overflow = 'hidden';
+  // ── Slider ─────────────────────────────────────────────────
+  const track    = document.getElementById('sliderTrack');
+  const cards    = Array.from(track.querySelectorAll('.slide-card'));
+  const dotsWrap = document.getElementById('sliderDots');
+  const cCurrent = document.getElementById('cCurrent');
+  const cTotal   = document.getElementById('cTotal');
+  let current    = 0;
+  let autoTimer  = null;
+
+  // Build dots
+  cards.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'slider-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsWrap.appendChild(d);
+  });
+
+  cTotal.textContent = cards.length;
+
+  function getCardWidth() {
+    return cards[0].offsetWidth + parseInt(getComputedStyle(track).gap || 20);
   }
 
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('open');
+  function goTo(index) {
+    current = (index + cards.length) % cards.length;
+
+    // Update active card
+    cards.forEach((c, i) => c.classList.toggle('active', i === current));
+
+    // Update dots
+    dotsWrap.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+
+    // Update counter
+    cCurrent.textContent = current + 1;
+
+    // Shift track so active card is centred
+    const cardW   = getCardWidth();
+    const vw      = document.getElementById('sliderViewport').offsetWidth;
+    const activeW = cards[current].offsetWidth;
+    const offset  = current * cardW - (vw / 2 - activeW / 2);
+    track.style.transform = `translateX(${-offset}px)`;
+  }
+
+  function slideBy(dir) {
+    resetAuto();
+    goTo(current + dir);
+  }
+
+  function resetAuto() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(() => goTo(current + 1), 4000);
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('filmLightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  slideBy(-1);
+    if (e.key === 'ArrowRight') slideBy(1);
+  });
+
+  // Touch / swipe
+  let touchX = null;
+  track.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const diff = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) slideBy(diff > 0 ? 1 : -1);
+    touchX = null;
+    resetAuto();
+  });
+
+  // Init
+  goTo(0);
+  resetAuto();
+  window.addEventListener('resize', () => goTo(current));
+
+  // ── Filmbox ────────────────────────────────────────────────
+  function openFilmbox(card) {
+    const src = card.querySelector('img').src;
+    document.getElementById('filmLbImg').src = src;
+    document.getElementById('filmLightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    clearInterval(autoTimer);
+  }
+
+  function closeFilmbox() {
+    document.getElementById('filmLightbox').classList.remove('open');
     document.body.style.overflow = '';
+    resetAuto();
   }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'Escape') closeFilmbox();
   });
-
-  function filterGallery(category, btn) {
-    document.querySelectorAll('.gf-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      if (category === 'all') {
-        item.classList.remove('hidden');
-      } else {
-        const match = item.dataset.category === category;
-        item.classList.toggle('hidden', !match);
-      }
-    });
-  }
 </script>
 
 </body>

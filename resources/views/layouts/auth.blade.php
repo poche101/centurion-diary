@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
-<title>@yield('title', 'Centurion Diary') — Join the Movement</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
+    <title>@yield('title', 'Centurion Diary') — Join the Movement</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --royal: #1a2c5b;
@@ -17,52 +17,78 @@
             --cream: #fdfbf5;
         }
 
-        * { box-sizing: border-box; }
-
-        html, body {
-            height: 100%;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Lato', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
             background: var(--cream);
         }
 
-        /* Left Panel */
-        .auth-left {
-            width: 45%;
-            min-height: 280px;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
+        /* ── Desktop: side by side, image fills panel fully ─────── */
+        @media (min-width: 769px) {
+            body {
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .auth-left {
+                width: 50%;
+                max-width: 1200px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+
+            /* Image fills 100% width AND height of the panel */
+            .auth-left img {
+                width: 100%;
+                height: 100%;
+                display: block;
+                object-fit: cover;
+                object-position: center center;
+            }
+
+            .auth-right {
+                flex: 1;
+                overflow-y: auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 48px 40px;
+            }
         }
 
-        .auth-left img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
+        /* ── Mobile: image fills full width, natural aspect ratio ── */
+        @media (max-width: 768px) {
+            body {
+                display: block;
+            }
+
+            .auth-left {
+                width: 100%;
+                /* Let the image determine the height — no fixed height, no cropping */
+                line-height: 0;
+            }
+
+            .auth-left img {
+                width: 100%;
+                height: auto;
+                display: block;
+                object-fit: cover;
+            }
+
+            .auth-right {
+                padding: 36px 24px 56px;
+            }
         }
 
-        /* Right Panel */
-        .auth-right {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
+        /* ── Form styles (shared) ──────────────────────────────── */
         .auth-form-wrap {
             width: 100%;
             max-width: 480px;
+            margin: 0 auto;
         }
 
         .auth-form-title {
@@ -201,41 +227,12 @@
 
         .divider-line { flex: 1; height: 1px; background: #e5e7eb; }
         .divider-text { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; }
-
-        /* Desktop: side by side */
-        @media (min-width: 769px) {
-            body {
-                flex-direction: row;
-            }
-
-            .auth-left {
-                min-height: 100vh;
-            }
-        }
-
-        /* Mobile: stacked, image on top */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .auth-left {
-                width: 100%;
-                height: 240px;
-                min-height: unset;
-                flex-shrink: 0;
-            }
-
-            .auth-right {
-                padding: 30px 24px;
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="auth-left">
-    <img src="{{ asset('images/join.jpeg') }}" alt="Join Centurion Diary">
+    <img src="{{ asset('images/man.jpeg') }}" alt="Join Centurion Diary">
 </div>
 
 <div class="auth-right">
