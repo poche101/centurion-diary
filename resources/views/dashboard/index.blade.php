@@ -159,7 +159,7 @@
 
             <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
                 <a href="{{ route('giving.index') }}" class="cd-btn cd-btn-primary" style="font-size:0.75rem;padding:9px 18px;">
-                    <i class="fas fa-plus"></i> Log Gift
+                    <i class="fas fa-plus"></i> Log Giving
                 </a>
                 <div style="text-align:right;">
                     <p style="font-size:0.7rem;font-family:'Cinzel',serif;color:#6b7280;">This Month</p>

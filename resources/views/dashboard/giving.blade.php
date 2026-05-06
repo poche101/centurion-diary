@@ -10,7 +10,7 @@
             <p style="font-size:0.88rem;color:#6b7280;margin-top:4px;font-family:'Cinzel',serif;">Track your generosity — journey to 100 Espees</p>
         </div>
         <button @click="showModal = true" class="cd-btn cd-btn-gold">
-            <i class="fas fa-plus"></i> Log Contribution
+            <i class="fas fa-plus"></i> Log Givings
         </button>
     </div>
 
@@ -34,7 +34,7 @@
         <div class="centurion-card fade-in-up" style="padding:20px;text-align:center;border-top:3px solid #1a2c5b;">
             <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">Gifts Logged</p>
             <p style="font-family:'Cinzel Decorative',serif;font-size:2rem;color:#1a2c5b;">{{ $totalGifts }}</p>
-            <p style="font-size:0.72rem;color:#9ca3af;font-family:'Cinzel',serif;">contributions</p>
+            <p style="font-size:0.72rem;color:#9ca3af;font-family:'Cinzel',serif;">Givings</p>
         </div>
     </div>
 
@@ -92,7 +92,7 @@
         <!-- Giving Log -->
         <div class="centurion-card fade-in-up" style="padding:24px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                <h3 style="font-family:'Cinzel',serif;font-size:0.95rem;color:#1a2c5b;font-weight:700;">Contribution History</h3>
+                <h3 style="font-family:'Cinzel',serif;font-size:0.95rem;color:#1a2c5b;font-weight:700;">Giving History</h3>
             </div>
 
             <div style="overflow-y:auto;max-height:500px;">
@@ -121,7 +121,7 @@
                     <p style="font-family:'Cinzel',serif;font-size:0.9rem;color:#374151;font-weight:600;">Begin Your Giving Journey</p>
                     <p style="font-size:0.8rem;color:#9ca3af;margin-top:6px;">Every gift matters. Start logging today.</p>
                     <button @click="showModal = true" class="cd-btn" style="background:linear-gradient(135deg,#14532d,#15803d);color:white;margin-top:16px;font-size:0.8rem;">
-                        Log First Gift
+                        Log First Giving
                     </button>
                 </div>
                 @endforelse
@@ -136,7 +136,7 @@
                 <div style="display:flex;align-items:center;gap:12px;">
                     <span style="font-size:1.5rem;">💝</span>
                     <div>
-                        <h3>Log Contribution</h3>
+                        <h3>Log Giving</h3>
                         <p style="color:rgba(255,255,255,0.5);font-size:0.75rem;margin-top:2px;">Record your act of generosity</p>
                     </div>
                 </div>
@@ -160,13 +160,7 @@
                 <div style="margin-bottom:14px;">
                     <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Category *</label>
                     <select name="category" class="cd-input" required>
-                        <option value="tithe">Tithe</option>
-                        <option value="offering">Offering</option>
-                        <option value="missions">Missions</option>
-                        <option value="welfare">Welfare</option>
-                        <option value="building_fund">Building Fund</option>
-                        <option value="special_seed">Special Seed</option>
-                        <option value="other">Other</option>
+                        <option value="tithe">Manifestation Conference</option>
                     </select>
                 </div>
 
@@ -178,7 +172,7 @@
                 <div style="display:flex;gap:10px;justify-content:flex-end;">
                     <button type="button" @click="showModal = false" class="cd-btn" style="background:#f3f4f6;color:#6b7280;">Cancel</button>
                     <button type="submit" class="cd-btn" style="background:linear-gradient(135deg,#14532d,#15803d);color:white;">
-                        <i class="fas fa-save"></i> Save Contribution
+                        <i class="fas fa-save"></i> Save Giving
                     </button>
                 </div>
             </form>
