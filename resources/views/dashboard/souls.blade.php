@@ -1,11 +1,53 @@
 @extends('layouts.app')
 @section('title', 'Soul Winning Registry')
 
+@push('styles')
+<style>
+    .souls-main-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    @media (max-width: 900px) {
+        .souls-main-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+        .soul-modal-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .page-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+        .registry-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+        }
+        .registry-search {
+            width: 100% !important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div x-data="soulsApp()">
 
     <!-- Page Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;" class="fade-in-up">
+    <div class="page-header fade-in-up" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div>
             <h1 style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#1a2c5b;">✨ Soul Winning Registry</h1>
             <p style="font-size:0.88rem;color:#6b7280;margin-top:4px;font-family:'Cinzel',serif;">Every soul matters — record 100 lives transformed</p>
@@ -16,7 +58,7 @@
     </div>
 
     <!-- Stats -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+    <div class="stats-grid">
         <div class="centurion-card fade-in-up" style="padding:20px;text-align:center;border-top:3px solid #c2410c;">
             <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">Total Souls</p>
             <p style="font-family:'Cinzel Decorative',serif;font-size:2.2rem;color:#c2410c;">{{ $totalSouls }}</p>
@@ -39,43 +81,43 @@
         </div>
     </div>
 
-    <!-- Progress Bar + Registry -->
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;">
+    <!-- Progress Panel + Registry -->
+    <div class="souls-main-grid">
 
         <!-- Progress Panel -->
         <div>
-    <!-- Big Progress -->
-    <div class="centurion-card fade-in-up" style="padding:24px;text-align:center;margin-bottom:16px;background:#ffffff;">
-        <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:3px;color:rgba(194,65,12,0.6);text-transform:uppercase;margin-bottom:16px;">Soul Winning Progress</p>
+            <!-- Big Progress Ring -->
+            <div class="centurion-card fade-in-up" style="padding:24px;text-align:center;margin-bottom:16px;">
+                <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:3px;color:rgba(194,65,12,0.6);text-transform:uppercase;margin-bottom:16px;">Soul Winning Progress</p>
 
-        <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
-            <svg width="160" height="160" class="progress-ring">
-                <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="10"/>
-                <circle cx="80" cy="80" r="68" fill="none"
-                        stroke="url(#soulGrad)" stroke-width="10"
-                        class="progress-ring-circle"
-                        data-progress="{{ min($soulsPercent, 100) }}"
-                        style="stroke-dasharray:{{ 2 * M_PI * 68 }};stroke-dashoffset:{{ 2 * M_PI * 68 * (1 - min($soulsPercent, 100) / 100) }}"/>
-                <defs>
-                    <linearGradient id="soulGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#c2410c"/>
-                        <stop offset="100%" stop-color="#fb923c"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-            <div style="position:absolute;text-align:center;">
-                <p style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#c2410c;">{{ $totalSouls }}</p>
-                <p style="font-size:0.6rem;font-family:'Cinzel',serif;color:rgba(194,65,12,0.5);">SOULS WON</p>
+                <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+                    <svg width="160" height="160" class="progress-ring">
+                        <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="10"/>
+                        <circle cx="80" cy="80" r="68" fill="none"
+                                stroke="url(#soulGrad)" stroke-width="10"
+                                class="progress-ring-circle"
+                                data-progress="{{ min($soulsPercent, 100) }}"
+                                style="stroke-dasharray:{{ 2 * M_PI * 68 }};stroke-dashoffset:{{ 2 * M_PI * 68 * (1 - min($soulsPercent, 100) / 100) }}"/>
+                        <defs>
+                            <linearGradient id="soulGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#c2410c"/>
+                                <stop offset="100%" stop-color="#fb923c"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div style="position:absolute;text-align:center;">
+                        <p style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#c2410c;">{{ $totalSouls }}</p>
+                        <p style="font-size:0.6rem;font-family:'Cinzel',serif;color:rgba(194,65,12,0.5);">SOULS WON</p>
+                    </div>
+                </div>
+
+                <div style="background:rgba(0,0,0,0.07);height:8px;border-radius:4px;overflow:hidden;margin-top:20px;">
+                    <div style="height:100%;width:{{ min($soulsPercent, 100) }}%;background:linear-gradient(90deg,#c2410c,#fb923c);border-radius:4px;transition:width 1s ease;"></div>
+                </div>
+                <p style="font-family:'Cinzel',serif;font-size:0.72rem;color:rgba(194,65,12,0.6);margin-top:8px;">{{ number_format($soulsPercent, 0) }}% to Centurion status</p>
             </div>
-        </div>
 
-        <!-- Mini bar -->
-        <div style="background:rgba(0,0,0,0.07);height:8px;border-radius:4px;overflow:hidden;margin-top:20px;">
-            <div style="height:100%;width:{{ min($soulsPercent, 100) }}%;background:linear-gradient(90deg,#c2410c,#fb923c);border-radius:4px;transition:width 1s ease;"></div>
-        </div>
-        <p style="font-family:'Cinzel',serif;font-size:0.72rem;color:rgba(194,65,12,0.6);margin-top:8px;">{{ number_format($soulsPercent, 0) }}% to Centurion status</p>
-    </div>
-            <!-- Scripture motivation -->
+            <!-- Scripture card -->
             <div class="centurion-card fade-in-up" style="padding:20px;background:linear-gradient(135deg,#fef3c7,#fde68a);">
                 <p style="font-family:'Cinzel',serif;font-size:0.72rem;color:#92400e;line-height:1.7;">
                     "He who wins souls is wise."
@@ -86,9 +128,10 @@
 
         <!-- Soul Registry -->
         <div class="centurion-card fade-in-up" style="padding:24px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div class="registry-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                 <h3 style="font-family:'Cinzel',serif;font-size:0.95rem;color:#1a2c5b;font-weight:700;">Soul Registry</h3>
                 <input type="text" placeholder="🔍 Search souls..." x-model="search"
+                       class="registry-search"
                        style="border:1px solid #e5e7eb;border-radius:8px;padding:7px 14px;font-size:0.78rem;outline:none;width:200px;">
             </div>
 
@@ -98,8 +141,8 @@
                     <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c2410c,#fb923c);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:700;color:white;font-size:1rem;flex-shrink:0;">
                         {{ strtoupper(substr($soul->soul_name, 0, 1)) }}
                     </div>
-                    <div style="flex:1;">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;">
                             <p style="font-family:'Cinzel',serif;font-size:0.85rem;color:#1a2c5b;font-weight:600;">{{ $soul->soul_name }}</p>
                             @if($soul->baptized)
                             <span style="background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:20px;font-size:0.62rem;font-family:'Cinzel',serif;">✓ Baptized</span>
@@ -142,7 +185,7 @@
 
     <!-- Add Soul Modal -->
     <div x-show="showModal" x-transition.opacity class="modal-overlay" @click.self="showModal = false">
-        <div class="modal-box" @click.stop>
+        <div class="modal-box" @click.stop style="max-height:90vh;overflow-y:auto;">
             <div class="modal-header" style="background:linear-gradient(135deg,#7c2d12,#c2410c);">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <span style="font-size:1.5rem;">✨</span>
@@ -156,7 +199,7 @@
             <form method="POST" action="{{ route('souls.store') }}" style="padding:24px;">
                 @csrf
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div class="soul-modal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
                     <div>
                         <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Full Name *</label>
                         <input type="text" name="soul_name" class="cd-input" placeholder="Person's name" required>
@@ -167,7 +210,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div class="soul-modal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
                     <div>
                         <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Phone</label>
                         <input type="tel" name="phone" class="cd-input" placeholder="Contact number">
@@ -192,7 +235,7 @@
                               style="resize:vertical;"></textarea>
                 </div>
 
-                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
                     <button type="button" @click="showModal = false" class="cd-btn" style="background:#f3f4f6;color:#6b7280;">Cancel</button>
                     <button type="submit" class="cd-btn" style="background:linear-gradient(135deg,#7c2d12,#c2410c);color:white;">
                         <i class="fas fa-save"></i> Save Soul Record

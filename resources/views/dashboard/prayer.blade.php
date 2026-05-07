@@ -1,22 +1,85 @@
 @extends('layouts.app')
 @section('title', 'Prayer Tracker')
 
+@section('styles')
+<style>
+    /* ── Stats row — 2 cols on mobile, 4 on desktop ─────────── */
+    .prayer-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+    @media (min-width: 640px) {
+        .prayer-stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+    }
+
+    /* ── Main layout — stack on mobile, side-by-side on desktop ─ */
+    .prayer-main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    @media (min-width: 900px) {
+        .prayer-main-grid {
+            grid-template-columns: 1fr 2fr;
+        }
+    }
+
+    /* ── Page header — stack on mobile ─────────────────────── */
+    .prayer-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Modal form grid — stack on mobile ─────────────────── */
+    .modal-date-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+    @media (max-width: 480px) {
+        .modal-date-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Prayer log scroll — limit height only on desktop ───── */
+    .prayer-log-scroll {
+        overflow-y: auto;
+    }
+    @media (min-width: 900px) {
+        .prayer-log-scroll {
+            max-height: 420px;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <div x-data="prayerApp()">
 
     <!-- Page Header -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;" class="fade-in-up">
+    <div class="prayer-page-header fade-in-up">
         <div>
             <h1 style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#1a2c5b;">🙏 Prayer Tracker</h1>
             <p style="font-size:0.88rem;color:#6b7280;margin-top:4px;font-family:'Cinzel',serif;">Journey toward 100 Hours of Intercession</p>
         </div>
-        <button @click="showModal = true" class="cd-btn cd-btn-gold">
+        <button @click="showModal = true" class="cd-btn cd-btn-gold" style="white-space:nowrap;">
             <i class="fas fa-plus"></i> Log Prayer Session
         </button>
     </div>
 
     <!-- Stats Row -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+    <div class="prayer-stats-grid">
         <div class="centurion-card fade-in-up" style="padding:20px;text-align:center;">
             <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">Total Hours</p>
             <p style="font-family:'Cinzel Decorative',serif;font-size:2rem;color:#1a2c5b;" class="stat-number">{{ number_format($totalHours, 1) }}</p>
@@ -40,7 +103,7 @@
     </div>
 
     <!-- Main Progress + Log List -->
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;">
+    <div class="prayer-main-grid">
 
         <!-- Big Progress Ring + Milestones -->
         <div class="centurion-card fade-in-up" style="padding:28px;text-align:center;">
@@ -68,7 +131,7 @@
             </div>
 
             <!-- Milestones -->
-            <div style="width:100%;">
+            <div style="width:100%;text-align:left;">
                 <p style="font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:1px;color:#9ca3af;margin-bottom:12px;text-transform:uppercase;">Milestones</p>
                 @foreach([25 => '25 Hours', 50 => '50 Hours', 75 => '75 Hours', 100 => '🏆 100 Hours — Centurion!'] as $milestone => $label)
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
@@ -88,7 +151,7 @@
 
         <!-- Prayer Log History -->
         <div class="centurion-card fade-in-up" style="padding:24px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
                 <h3 style="font-family:'Cinzel',serif;font-size:0.95rem;color:#1a2c5b;font-weight:700;">Prayer Sessions</h3>
                 <div style="display:flex;gap:8px;">
                     <select style="border:1px solid #e5e7eb;border-radius:8px;padding:6px 12px;font-size:0.78rem;font-family:'Cinzel',serif;color:#374151;background:white;">
@@ -99,22 +162,22 @@
                 </div>
             </div>
 
-            <div style="overflow-y:auto;max-height:420px;">
+            <div class="prayer-log-scroll">
                 @forelse($prayerLogs as $log)
                 <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid rgba(212,160,23,0.06);">
                     <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#1a2c5b,#2a3f7a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
                         🙏
                     </div>
-                    <div style="flex:1;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
                             <p style="font-family:'Cinzel',serif;font-size:0.85rem;color:#1a2c5b;font-weight:600;">
                                 {{ $log->duration_minutes >= 60 ? floor($log->duration_minutes/60).'h '.($log->duration_minutes%60).'m' : $log->duration_minutes.' min' }}
                                 <span style="font-weight:400;color:#6b7280;font-size:0.75rem;">of prayer</span>
                             </p>
-                            <span style="font-size:0.7rem;color:#9ca3af;font-family:'Cinzel',serif;">{{ $log->created_at->format('M j, Y') }}</span>
+                            <span style="font-size:0.7rem;color:#9ca3af;font-family:'Cinzel',serif;white-space:nowrap;">{{ $log->created_at->format('M j, Y') }}</span>
                         </div>
                         @if($log->notes)
-                        <p style="font-size:0.78rem;color:#6b7280;line-height:1.5;font-style:italic;">"{{ $log->notes }}"</p>
+                        <p style="font-size:0.78rem;color:#6b7280;line-height:1.5;font-style:italic;word-break:break-word;">"{{ $log->notes }}"</p>
                         @endif
                         @if($log->prayer_type)
                         <span style="display:inline-block;margin-top:4px;background:#eff6ff;color:#1d4ed8;padding:2px 10px;border-radius:20px;font-size:0.65rem;font-family:'Cinzel',serif;">
@@ -122,7 +185,7 @@
                         </span>
                         @endif
                     </div>
-                    <div style="text-align:right;font-family:'Cinzel',serif;font-size:0.8rem;color:#d4a017;font-weight:700;">
+                    <div style="text-align:right;font-family:'Cinzel',serif;font-size:0.8rem;color:#d4a017;font-weight:700;flex-shrink:0;">
                         +{{ number_format($log->duration_minutes / 60, 2) }}h
                     </div>
                 </div>
@@ -148,7 +211,7 @@
 
     <!-- Log Prayer Modal -->
     <div x-show="showModal" x-transition.opacity class="modal-overlay" @click.self="showModal = false">
-        <div class="modal-box" @click.stop>
+        <div class="modal-box" @click.stop style="max-height:90vh;overflow-y:auto;">
             <div class="modal-header">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <span style="font-size:1.5rem;">🙏</span>
@@ -162,7 +225,7 @@
             <form method="POST" action="{{ route('prayer.store') }}" style="padding:24px;">
                 @csrf
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div class="modal-date-grid">
                     <div>
                         <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Date *</label>
                         <input type="date" name="prayer_date" class="cd-input"
@@ -193,7 +256,7 @@
                               style="resize:vertical;"></textarea>
                 </div>
 
-                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
                     <button type="button" @click="showModal = false" class="cd-btn" style="background:#f3f4f6;color:#6b7280;">
                         Cancel
                     </button>

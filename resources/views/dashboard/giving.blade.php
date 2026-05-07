@@ -1,10 +1,50 @@
 @extends('layouts.app')
 @section('title', 'Giving Ledger')
 
+@push('styles')
+<style>
+    .giving-main-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+    }
+    .giving-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+    @media (max-width: 900px) {
+        .giving-main-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    @media (max-width: 640px) {
+        .giving-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+        .giving-modal-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .giving-page-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+        .giving-log-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div x-data="{ showModal: {{ $errors->any() ? 'true' : 'false' }} }">
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;" class="fade-in-up">
+    <!-- Page Header -->
+    <div class="giving-page-header fade-in-up" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
         <div>
             <h1 style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#1a2c5b;">💝 Giving Ledger</h1>
             <p style="font-size:0.88rem;color:#6b7280;margin-top:4px;font-family:'Cinzel',serif;">Track your generosity — journey to 100 Espees</p>
@@ -15,7 +55,7 @@
     </div>
 
     <!-- Stats -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+    <div class="giving-stats-grid">
         <div class="centurion-card fade-in-up" style="padding:20px;text-align:center;border-top:3px solid #15803d;">
             <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:#9ca3af;margin-bottom:8px;">Total Given</p>
             <p style="font-family:'Cinzel Decorative',serif;font-size:2rem;color:#15803d;">{{ number_format($totalEspees, 1) }}</p>
@@ -38,10 +78,12 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;">
+    <!-- Progress + Log -->
+    <div class="giving-main-grid">
 
         <!-- Progress Panel -->
         <div>
+            <!-- Ring -->
             <div class="centurion-card fade-in-up" style="padding:24px;text-align:center;background:linear-gradient(135deg,#14532d,#15803d);margin-bottom:16px;">
                 <p style="font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:3px;color:rgba(134,239,172,0.7);text-transform:uppercase;margin-bottom:16px;">Giving Progress</p>
 
@@ -72,12 +114,12 @@
                 <p style="font-family:'Cinzel',serif;font-size:0.72rem;color:rgba(134,239,172,0.6);margin-top:8px;">{{ number_format($givingPercent, 0) }}% to Centurion</p>
             </div>
 
-            <!-- Giving Categories -->
+            <!-- By Category -->
             <div class="centurion-card fade-in-up" style="padding:20px;">
                 <p style="font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;color:#1a2c5b;margin-bottom:14px;">By Category</p>
                 @foreach($byCategory as $cat)
                 <div style="margin-bottom:12px;">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
                         <p style="font-family:'Cinzel',serif;font-size:0.75rem;color:#374151;">{{ ucfirst($cat->category) }}</p>
                         <p style="font-family:'Cinzel',serif;font-size:0.75rem;color:#1a2c5b;font-weight:700;">{{ number_format($cat->total, 1) }} esp.</p>
                     </div>
@@ -91,7 +133,7 @@
 
         <!-- Giving Log -->
         <div class="centurion-card fade-in-up" style="padding:24px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div class="giving-log-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                 <h3 style="font-family:'Cinzel',serif;font-size:0.95rem;color:#1a2c5b;font-weight:700;">Giving History</h3>
             </div>
 
@@ -101,16 +143,16 @@
                     <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#15803d,#4ade80);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
                         💝
                     </div>
-                    <div style="flex:1;">
+                    <div style="flex:1;min-width:0;">
                         <p style="font-family:'Cinzel',serif;font-size:0.85rem;color:#1a2c5b;font-weight:600;">
                             {{ ucfirst($log->category) }}
                         </p>
                         @if($log->description)
-                        <p style="font-size:0.75rem;color:#6b7280;margin-top:2px;">{{ $log->description }}</p>
+                        <p style="font-size:0.75rem;color:#6b7280;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $log->description }}</p>
                         @endif
                         <p style="font-size:0.7rem;color:#9ca3af;margin-top:2px;font-family:'Cinzel',serif;">{{ $log->date_given->format('M j, Y') }}</p>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="text-align:right;flex-shrink:0;">
                         <p style="font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:#15803d;font-weight:700;">+{{ number_format($log->amount_espees, 2) }}</p>
                         <p style="font-size:0.65rem;color:#9ca3af;font-family:'Cinzel',serif;">espees</p>
                     </div>
@@ -131,7 +173,7 @@
 
     <!-- Log Giving Modal -->
     <div x-show="showModal" x-transition.opacity class="modal-overlay" @click.self="showModal = false">
-        <div class="modal-box" @click.stop>
+        <div class="modal-box" @click.stop style="max-height:90vh;overflow-y:auto;">
             <div class="modal-header" style="background:linear-gradient(135deg,#14532d,#15803d);">
                 <div style="display:flex;align-items:center;gap:12px;">
                     <span style="font-size:1.5rem;">💝</span>
@@ -145,7 +187,7 @@
             <form method="POST" action="{{ route('giving.store') }}" style="padding:24px;">
                 @csrf
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div class="giving-modal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
                     <div>
                         <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Amount (Espees) *</label>
                         <input type="number" name="amount_espees" class="cd-input"
@@ -169,7 +211,7 @@
                     <input type="text" name="description" class="cd-input" placeholder="Optional note...">
                 </div>
 
-                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
                     <button type="button" @click="showModal = false" class="cd-btn" style="background:#f3f4f6;color:#6b7280;">Cancel</button>
                     <button type="submit" class="cd-btn" style="background:linear-gradient(135deg,#14532d,#15803d);color:white;">
                         <i class="fas fa-save"></i> Save Giving
