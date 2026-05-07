@@ -139,6 +139,18 @@
             100% { transform: translateY(-20px) scale(1); opacity: 0; }
         }
 
+        /* ── Sidebar overlay — click outside to close ─────────── */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(3px);
+            z-index: 49;
+            cursor: pointer;
+        }
+        .sidebar-overlay.open { display: block; }
+
         /* Sidebar */
         .sidebar {
             background: linear-gradient(160deg, #0f1f45 0%, #1a2c5b 40%, #1e3370 100%);
@@ -160,8 +172,11 @@
         }
 
         .sidebar-logo {
-            padding: 28px 24px 20px;
+            padding: 20px 24px 18px;
             border-bottom: 1px solid rgba(212,160,23,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .sidebar-logo .logo-crown {
@@ -184,6 +199,28 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-top: 2px;
+        }
+
+        /* ── Sidebar close button (mobile only) ───────────────── */
+        .sidebar-close-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .sidebar-close-btn:hover {
+            background: rgba(212,160,23,0.2);
+            border-color: rgba(212,160,23,0.4);
+            color: var(--gold-light);
+            transform: rotate(90deg);
         }
 
         .nav-section {
@@ -380,6 +417,8 @@
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .sidebar-close-btn { display: flex; }
             .main-content { margin-left: 0; }
         }
 
@@ -604,6 +643,12 @@
 <!-- Particle Background -->
 <div class="particle-bg" id="particles"></div>
 
+{{-- ── Overlay — clicking anywhere outside sidebar closes it ──── --}}
+<div class="sidebar-overlay"
+     :class="{ 'open': sidebarOpen }"
+     @click="sidebarOpen = false">
+</div>
+
 <!-- Sidebar -->
 <aside class="sidebar" :class="{ 'open': sidebarOpen }">
     <div class="sidebar-logo">
@@ -614,6 +659,13 @@
                 <p>Rule of 100</p>
             </div>
         </div>
+
+        {{-- Close button — visible on mobile only ──────────────── --}}
+        <button class="sidebar-close-btn"
+                @click="sidebarOpen = false"
+                aria-label="Close sidebar">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
 
     @auth
