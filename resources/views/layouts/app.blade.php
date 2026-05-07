@@ -17,62 +17,6 @@
 
     <link rel="manifest" href="/manifest.json">
 
-    {{-- ── Service Worker + Push Notification Setup ─────────────────────────── --}}
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-          .then(async function(registration) {
-
-            // 1. Ask for permission (triggers the browser allow/block prompt once)
-            if ('Notification' in window && Notification.permission === 'default') {
-              const permission = await Notification.requestPermission();
-              if (permission !== 'granted') {
-                console.warn('🔕 Notification permission not granted.');
-                return;
-              }
-            }
-
-            // 2. Only proceed if permission is confirmed granted
-            if (Notification.permission !== 'granted') return;
-            if (!('PushManager' in window)) return;
-
-            // 3. Skip if already subscribed
-            const existing = await registration.pushManager.getSubscription();
-            if (existing) return;
-
-            // 4. Subscribe using VAPID public key from Laravel config
-            const vapidKey = '{{ config("webpush.vapid.public_key") }}';
-            if (!vapidKey) return;
-
-            const subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(vapidKey),
-            });
-
-            // 5. Save subscription to Laravel backend
-            await fetch('/push/subscribe', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-              },
-              body: JSON.stringify(subscription),
-            });
-
-            console.log('✅ Push subscription saved.');
-          })
-          .catch(function(err) {
-            console.error('❌ SW registration failed:', err);
-          });
-      }
-
-      function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-        const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-        const raw     = atob(base64);
-        return Uint8Array.from([...raw].map(function(c) { return c.charCodeAt(0); }));
-      }
-    </script>
 
     <!-- Tailwind via CDN for demo -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -857,6 +801,159 @@ document.addEventListener('DOMContentLoaded', function() {
         circle.style.strokeDashoffset = offset;
     });
 });
+</script>
+
+{{-- ── Service Worker + Push Notification Setup ─────────────────────────── --}}
+<script>
+  // ── Helpers ──────────────────────────────────────────────────────
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw     = atob(base64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  }
+
+  async function subscribeToPush(registration) {
+    try {
+      // Check if already subscribed
+      const existing = await registration.pushManager.getSubscription();
+      if (existing) return;
+
+      const vapidKey = '{{ config("webpush.vapid.public_key") }}';
+      if (!vapidKey) return;
+
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+
+      await fetch('/push/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+        body: JSON.stringify(subscription),
+      });
+
+      console.log('✅ Push subscription saved.');
+    } catch (err) {
+      console.error('❌ Push subscription failed:', err);
+    }
+  }
+
+  async function requestNotificationPermission(registration) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      // Already granted — just subscribe silently
+      await subscribeToPush(registration);
+      return;
+    }
+    if (Notification.permission === 'denied') return;
+
+    // Show a friendly prompt button instead of firing the browser dialog immediately
+    showNotificationBanner(registration);
+  }
+
+  function showNotificationBanner(registration) {
+    // Don't show if already dismissed
+    if (localStorage.getItem('push_banner_dismissed')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'push-banner';
+    banner.innerHTML = `
+      <div style="
+        position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+        background:linear-gradient(135deg,#1a2c5b,#2a3f7a);
+        color:white;padding:16px 24px;border-radius:16px;
+        box-shadow:0 8px 32px rgba(0,0,0,0.3);
+        display:flex;align-items:center;gap:16px;
+        font-family:'Cinzel',serif;font-size:0.82rem;
+        z-index:9999;max-width:420px;width:calc(100% - 48px);
+        animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      ">
+        <span style="font-size:1.6rem;flex-shrink:0;">🙏</span>
+        <div style="flex:1;">
+          <p style="font-weight:700;color:#f5d060;margin-bottom:3px;">Stay Spiritually Accountable</p>
+          <p style="color:rgba(255,255,255,0.7);font-size:0.75rem;">Enable notifications for prayer reminders & updates.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          <button id="push-allow" style="
+            background:linear-gradient(135deg,#d4a017,#f5d060);
+            color:#1a2c5b;border:none;padding:7px 16px;
+            border-radius:8px;font-family:'Cinzel',serif;
+            font-size:0.72rem;font-weight:700;cursor:pointer;
+            white-space:nowrap;
+          ">Allow</button>
+          <button id="push-dismiss" style="
+            background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);
+            border:1px solid rgba(255,255,255,0.15);padding:5px 16px;
+            border-radius:8px;font-family:'Cinzel',serif;
+            font-size:0.68rem;cursor:pointer;white-space:nowrap;
+          ">Not now</button>
+        </div>
+      </div>
+      <style>
+        @keyframes slideUp {
+          from { opacity:0; transform:translateX(-50%) translateY(20px); }
+          to   { opacity:1; transform:translateX(-50%) translateY(0); }
+        }
+      </style>
+    `;
+
+    document.body.appendChild(banner);
+
+    // Allow button — triggers the real browser permission dialog
+    document.getElementById('push-allow').addEventListener('click', async () => {
+      banner.remove();
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        await subscribeToPush(registration);
+      }
+    });
+
+    // Dismiss button — hide for 7 days
+    document.getElementById('push-dismiss').addEventListener('click', () => {
+      banner.remove();
+      localStorage.setItem('push_banner_dismissed', Date.now());
+    });
+
+    // Auto-dismiss after 10 seconds
+    setTimeout(() => {
+      if (document.getElementById('push-banner')) {
+        banner.remove();
+      }
+    }, 10000);
+  }
+
+  // ── Register Service Worker ───────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('✅ SW registered.');
+
+        // Wait for SW to be active before prompting
+        if (registration.active) {
+          await requestNotificationPermission(registration);
+        } else {
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', async () => {
+              if (newWorker.state === 'activated') {
+                await requestNotificationPermission(registration);
+              }
+            });
+          });
+
+          // Fallback: prompt after short delay
+          setTimeout(() => requestNotificationPermission(registration), 3000);
+        }
+      } catch (err) {
+        console.error('❌ SW registration failed:', err);
+      }
+    });
+  }
 </script>
 
 @stack('scripts')

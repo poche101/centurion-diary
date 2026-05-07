@@ -1,9 +1,17 @@
 @extends('layouts.app')
 @section('title', 'Prayer Tracker')
 
-@section('styles')
+@push('styles')
 <style>
-    /* ── Stats row — 2 cols on mobile, 4 on desktop ─────────── */
+    .prayer-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
     .prayer-stats-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -17,7 +25,6 @@
         }
     }
 
-    /* ── Main layout — stack on mobile, side-by-side on desktop ─ */
     .prayer-main-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -29,17 +36,6 @@
         }
     }
 
-    /* ── Page header — stack on mobile ─────────────────────── */
-    .prayer-page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-    }
-
-    /* ── Modal form grid — stack on mobile ─────────────────── */
     .modal-date-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -52,7 +48,6 @@
         }
     }
 
-    /* ── Prayer log scroll — limit height only on desktop ───── */
     .prayer-log-scroll {
         overflow-y: auto;
     }
@@ -62,7 +57,7 @@
         }
     }
 </style>
-@endsection
+@endpush
 
 @section('content')
 <div x-data="prayerApp()">
@@ -74,7 +69,7 @@
             <p style="font-size:0.88rem;color:#6b7280;margin-top:4px;font-family:'Cinzel',serif;">Journey toward 100 Hours of Intercession</p>
         </div>
         <button @click="showModal = true" class="cd-btn cd-btn-gold" style="white-space:nowrap;">
-            <i class="fas fa-plus"></i> Log Prayer Session
+            <i class="fas fa-plus"></i> Log Prayer Hours Completed
         </button>
     </div>
 
