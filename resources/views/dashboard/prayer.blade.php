@@ -247,7 +247,7 @@
                 <div style="margin-bottom:20px;">
                     <label style="display:block;font-family:'Cinzel',serif;font-size:0.72rem;text-transform:uppercase;color:#374151;margin-bottom:6px;">Notes / Testimony</label>
                     <textarea name="notes" class="cd-input" rows="3"
-                              placeholder="What did God reveal during prayer?..."
+                              placeholder="Share Your Testimony..."
                               style="resize:vertical;"></textarea>
                 </div>
 
